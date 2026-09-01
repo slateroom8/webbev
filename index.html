@@ -247,32 +247,14 @@
 
 <script>
 /* ------------------------------------------------------------------
-   WIRING THE EMAIL FIELD  —  fill in ONE of these, then it's live.
-
-   Option A · Web3Forms (no backend, ~2 min, keeps this a single file)
-     1. Go to web3forms.com, enter the inbox you want leads to land in,
-        copy the access key they email you.
-     2. Paste it as web3formsKey below. Done.
-
-   Option B · Supabase (fits your stack — a "leads" table)
-     Run this once in the SQL editor:
-        create table public.leads (
-          id uuid primary key default gen_random_uuid(),
-          email text not null,
-          created_at timestamptz default now()
-        );
-        alter table public.leads enable row level security;
-        create policy "anon can insert leads" on public.leads
-          for insert to anon with check (true);
-     Then paste your project URL + anon key below. (Anon key is safe to
-     ship; the RLS policy allows insert-only, no reads.)
-
-   Leave all blank = demo mode: the confirmation shows but nothing sends.
+   Email delivery — Formspree.
+   Submissions POST to this endpoint and land in the inbox tied to the
+   "Ether inquiries" form (advertising@ottawafinedining.com).
+   The _subject tag below labels them in the shared inbox.
 ------------------------------------------------------------------- */
 const CONFIG = {
-  web3formsKey:   "",
-  supabaseUrl:    "",
-  supabaseAnonKey:"",
+  formspreeEndpoint: "https://formspree.io/f/xgaeaoyd",
+  subject: "New ether inquiry",
 };
 
 const $ = s => document.querySelector(s);
@@ -310,37 +292,15 @@ async function submit(){
 }
 
 async function deliver(addr){
-  if (CONFIG.web3formsKey){
-    const r = await fetch('https://api.web3forms.com/submit', {
-      method:'POST',
-      headers:{'Content-Type':'application/json', Accept:'application/json'},
-      body: JSON.stringify({
-        access_key: CONFIG.web3formsKey,
-        subject: 'ether — new trace',
-        email: addr,
-        from_name: 'ethersc.com'
-      })
-    });
-    if (!r.ok) throw new Error('web3forms '+r.status);
-    return;
-  }
-  if (CONFIG.supabaseUrl && CONFIG.supabaseAnonKey){
-    const r = await fetch(CONFIG.supabaseUrl.replace(/\/$/,'') + '/rest/v1/leads', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        apikey: CONFIG.supabaseAnonKey,
-        Authorization: 'Bearer ' + CONFIG.supabaseAnonKey,
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify({ email: addr })
-    });
-    if (!r.ok) throw new Error('supabase '+r.status);
-    return;
-  }
-  // demo mode — nothing wired yet
-  console.warn('ether: no endpoint configured. Fill CONFIG in index.html to capture leads.');
-  await new Promise(res => setTimeout(res, 350));
+  const r = await fetch(CONFIG.formspreeEndpoint, {
+    method:'POST',
+    headers:{'Content-Type':'application/json', Accept:'application/json'},
+    body: JSON.stringify({
+      email: addr,
+      _subject: CONFIG.subject
+    })
+  });
+  if (!r.ok) throw new Error('formspree '+r.status);
 }
 
 /* ---- the aura + reveal follow the cursor, with a little inertia (mist) ---- */
