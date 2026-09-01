@@ -120,12 +120,20 @@
     border-bottom:1px solid var(--line);
     transition:border-color .5s ease;
   }
-  .field:focus-within{ border-color:#5f6d78; }
+  .field:focus-within{
+    border-color:#8fa6b3;
+    box-shadow:0 1px 0 rgba(143,166,179,.4);
+  }
 
   .field input{
     flex:1;
+    min-width:0;
     background:transparent;
     border:0;
+    border-radius:0;
+    -webkit-appearance:none;
+            appearance:none;
+    -webkit-tap-highlight-color:transparent;
     color:var(--lumen);
     font-family:inherit;
     font-weight:300;
@@ -134,6 +142,7 @@
     padding:.7rem 0;
     outline:none;
   }
+  .field input:focus{ outline:none; }
   .field input::placeholder{ color:var(--ash); opacity:.4; letter-spacing:.06em; }
 
   .send{
@@ -196,9 +205,6 @@
     transition:opacity 1.2s ease;
   }
   .js .aura{ opacity:1; }
-
-  /* keyboard focus visibility */
-  input:focus-visible{ outline:2px solid rgba(150,196,222,.5); outline-offset:6px; border-radius:1px; }
 
   /* touch / no-hover devices: keep everything comfortably legible */
   @media (hover:none){
